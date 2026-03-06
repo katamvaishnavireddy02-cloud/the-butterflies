@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Screenplay Generator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="page-badge">✦ Module 01</div>
+    <h1 class="page-title">Screenplay Generator</h1>
+    <p class="page-sub">Transform your concept into a properly formatted screenplay excerpt with scenes, action, and dialogue.</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="generator-layout">
+    <!-- Input Panel -->
+    <div class="input-panel">
+      <div class="panel-header">Film Concept</div>
+      <div class="form-group full">
+        <label class="form-label">Your Idea</label>
+        <textarea id="idea" class="form-input tall" rows="5" placeholder="Describe your film idea in as much detail as you like…&#10;&#10;A disgraced war photographer returns to the town she fled 20 years ago to document its revival — and finds the secrets she buried are still very much alive."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Genre</label>
+          <select id="genre" class="form-input">
+            <option>Drama</option><option>Thriller</option><option>Sci-Fi</option>
+            <option>Horror</option><option>Romance</option><option>Action</option>
+            <option>Comedy</option><option>Mystery</option><option>Fantasy</option><option>Documentary</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tone</label>
+          <select id="tone" class="form-input">
+            <option>Dark & Gritty</option><option>Whimsical</option><option>Epic</option>
+            <option>Intimate</option><option>Satirical</option><option>Surreal</option>
+            <option>Nostalgic</option><option>Tense</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary full-width mt-16" id="generateBtn" onclick="generate()">Generate Screenplay ✦</button>
+
+      <div class="tips-box">
+        <div class="tips-title">Tips for Best Results</div>
+        <ul class="tips-list">
+          <li>Include protagonist's goal and obstacle</li>
+          <li>Mention the setting/era/location</li>
+          <li>Hint at the central conflict</li>
+          <li>Describe the emotional core of the story</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="output-panel">
+      <div class="panel-header">
+        <span>Screenplay Output</span>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="copyOutput()" title="Copy">⎘</button>
+          <button class="icon-btn" onclick="exportOutput()" title="Export">↓</button>
+        </div>
+      </div>
+      <div class="output-area" id="outputArea">
+        <div class="output-empty">
+          <div class="empty-icon">✦</div>
+          <p>Your screenplay will appear here</p>
+          <span>Enter your concept and click Generate</span>
+        </div>
+      </div>
+      <div class="output-footer" id="outputFooter" style="display:none">
+        <span id="wordCount" class="word-count"></span>
+        <div class="status-dot done"></div>
+        <span class="status-text">Generated</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/generator.js') }}"></script>
+<script>
+async function generate() {
+  const idea  = document.getElementById('idea').value.trim();
+  const genre = document.getElementById('genre').value;
+  const tone  = document.getElementById('tone').value;
+  if (!idea) { alert('Please enter a film concept.'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+
+  const area = document.getElementById('outputArea');
+  area.innerHTML = '<pre class="output-pre" id="outputPre"></pre><span class="cursor-blink"></span>';
+
+  let full = '';
+  await streamGenerate('screenplay', idea, genre, tone, (chunk) => {
+    full += chunk;
+    document.getElementById('outputPre').textContent = full;
+    area.scrollTop = area.scrollHeight;
+  });
+
+  // remove cursor
+  area.querySelector('.cursor-blink')?.remove();
+  updateFooter(full);
+  btn.disabled = false; btn.textContent = 'Regenerate ✦';
+}
+
+function updateFooter(text) {
+  const wc = text.split(/\s+/).filter(Boolean).length;
+  document.getElementById('wordCount').textContent = wc + ' words';
+  document.getElementById('outputFooter').style.display = 'flex';
+}
+function copyOutput() { navigator.clipboard.writeText(document.getElementById('outputPre')?.textContent || ''); }
+function exportOutput() { downloadText(document.getElementById('outputPre')?.textContent || '', 'screenplay.txt'); }
+</script>
+{% endblock %}

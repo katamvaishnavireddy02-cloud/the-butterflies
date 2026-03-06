@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Character Development{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="page-badge">◈ Module 02</div>
+    <h1 class="page-title">Character Development</h1>
+    <p class="page-sub">Generate deep, psychologically complex character profiles that bring your story to life.</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="generator-layout">
+    <div class="input-panel">
+      <div class="panel-header">Film Concept</div>
+      <div class="form-group full">
+        <label class="form-label">Your Idea</label>
+        <textarea id="idea" class="form-input tall" rows="5" placeholder="Describe your film concept…&#10;&#10;A marine biologist and a fisherman form an unlikely bond as they investigate a series of strange occurrences in a small coastal town — unaware that the sea itself may be sentient."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Genre</label>
+          <select id="genre" class="form-input">
+            <option>Drama</option><option>Thriller</option><option>Sci-Fi</option>
+            <option>Horror</option><option>Romance</option><option>Action</option>
+            <option>Comedy</option><option>Mystery</option><option>Fantasy</option><option>Documentary</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tone</label>
+          <select id="tone" class="form-input">
+            <option>Dark & Gritty</option><option>Whimsical</option><option>Epic</option>
+            <option>Intimate</option><option>Satirical</option><option>Surreal</option>
+            <option>Nostalgic</option><option>Tense</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary full-width mt-16" id="generateBtn" onclick="generate()">Generate Characters ◈</button>
+
+      <div class="tips-box">
+        <div class="tips-title">Character Tips</div>
+        <ul class="tips-list">
+          <li>Mention key relationships in your idea</li>
+          <li>Include the protagonist's world clearly</li>
+          <li>Hint at power dynamics if any</li>
+          <li>Note the time period / cultural setting</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="output-panel">
+      <div class="panel-header">
+        <span>Character Profiles</span>
+        <div class="panel-actions">
+          <button class="icon-btn" onclick="copyOutput()" title="Copy">⎘</button>
+          <button class="icon-btn" onclick="exportOutput()" title="Export">↓</button>
+        </div>
+      </div>
+      <div class="output-area" id="outputArea">
+        <div class="output-empty">
+          <div class="empty-icon">◈</div>
+          <p>Character profiles will appear here</p>
+          <span>Enter your concept and click Generate</span>
+        </div>
+      </div>
+      <div class="output-footer" id="outputFooter" style="display:none">
+        <span id="wordCount" class="word-count"></span>
+        <div class="status-dot done"></div>
+        <span class="status-text">Generated</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/generator.js') }}"></script>
+<script>
+async function generate() {
+  const idea  = document.getElementById('idea').value.trim();
+  const genre = document.getElementById('genre').value;
+  const tone  = document.getElementById('tone').value;
+  if (!idea) { alert('Please enter a film concept.'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true; btn.textContent = 'Generating…';
+
+  const area = document.getElementById('outputArea');
+  area.innerHTML = '<pre class="output-pre" id="outputPre"></pre><span class="cursor-blink"></span>';
+
+  let full = '';
+  await streamGenerate('characters', idea, genre, tone, (chunk) => {
+    full += chunk;
+    document.getElementById('outputPre').textContent = full;
+    area.scrollTop = area.scrollHeight;
+  });
+
+  area.querySelector('.cursor-blink')?.remove();
+  const wc = full.split(/\s+/).filter(Boolean).length;
+  document.getElementById('wordCount').textContent = wc + ' words';
+  document.getElementById('outputFooter').style.display = 'flex';
+  btn.disabled = false; btn.textContent = 'Regenerate ◈';
+}
+function copyOutput() { navigator.clipboard.writeText(document.getElementById('outputPre')?.textContent || ''); }
+function exportOutput() { downloadText(document.getElementById('outputPre')?.textContent || '', 'characters.txt'); }
+</script>
+{% endblock %}

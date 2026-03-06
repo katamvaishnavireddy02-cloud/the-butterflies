@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Home – AI Film Pre-Production{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">EST. MMXXV &nbsp;·&nbsp; GENERATIVE AI STUDIO</div>
+    <h1 class="hero-title">
+      Title<em>Scriptoria</em>
+    </h1>
+    <p class="hero-subtitle">From a single idea to a complete film pre-production package.<br>AI-generated screenplays, characters, sound design &amp; production plans.</p>
+    <div class="hero-cta-group">
+      <a href="/screenplay" class="btn btn-primary">Begin Creating ✦</a>
+      <a href="#features" class="btn btn-ghost">Explore Features</a>
+    </div>
+  </div>
+  <!-- decorative reel -->
+  <div class="hero-reel">
+    <div class="reel-circle outer"></div>
+    <div class="reel-circle mid"></div>
+    <div class="reel-circle inner"></div>
+    <div class="reel-spoke s1"></div>
+    <div class="reel-spoke s2"></div>
+    <div class="reel-spoke s3"></div>
+  </div>
+</section>
+
+<!-- Quick Generate Section -->
+<section class="quick-section">
+  <div class="container">
+    <div class="section-label">✦ Quick Generate</div>
+    <h2 class="section-title">Start from Your Idea</h2>
+    <p class="section-sub">Enter a concept below and generate all four pre-production documents at once.</p>
+
+    <div class="quick-form-card">
+      <div class="form-row">
+        <div class="form-group full">
+          <label class="form-label">Film Concept</label>
+          <textarea id="quickIdea" class="form-input" rows="3" placeholder="A retired cartographer discovers that every map she's ever drawn predicts the future — and the next map shows her own death…"></textarea>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Genre</label>
+          <select id="quickGenre" class="form-input">
+            <option>Drama</option><option>Thriller</option><option>Sci-Fi</option>
+            <option>Horror</option><option>Romance</option><option>Action</option>
+            <option>Comedy</option><option>Mystery</option><option>Fantasy</option><option>Documentary</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tone</label>
+          <select id="quickTone" class="form-input">
+            <option>Dark & Gritty</option><option>Whimsical</option><option>Epic</option>
+            <option>Intimate</option><option>Satirical</option><option>Surreal</option>
+            <option>Nostalgic</option><option>Tense</option>
+          </select>
+        </div>
+        <div class="form-group btn-group-align">
+          <button class="btn btn-primary full-width" id="quickGenerateBtn" onclick="quickGenerate()">Generate All ✦</button>
+        </div>
+      </div>
+
+      <!-- Quick results tabs -->
+      <div id="quickResults" class="quick-results hidden">
+        <div class="result-tabs">
+          <button class="rtab active" data-tab="screenplay">Screenplay</button>
+          <button class="rtab" data-tab="characters">Characters</button>
+          <button class="rtab" data-tab="sound">Sound Design</button>
+          <button class="rtab" data-tab="production">Production</button>
+        </div>
+        <div class="result-progress">
+          <span id="progressText">Generating…</span>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+        <div class="result-panels">
+          <div class="result-panel active" id="panel-screenplay"><div class="output-text" id="out-screenplay"></div></div>
+          <div class="result-panel" id="panel-characters"><div class="output-text" id="out-characters"></div></div>
+          <div class="result-panel" id="panel-sound"><div class="output-text" id="out-sound"></div></div>
+          <div class="result-panel" id="panel-production"><div class="output-text" id="out-production"></div></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn btn-ghost sm" onclick="exportActive()">↓ Export Active</button>
+          <button class="btn btn-ghost sm" onclick="exportAll()">↓ Export All</button>
+          <button class="btn btn-ghost sm" onclick="copyActive()">⎘ Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="section-label">✦ Capabilities</div>
+    <h2 class="section-title">Everything You Need</h2>
+    <div class="features-grid">
+      <a href="/screenplay" class="feature-card">
+        <div class="feature-icon">✦</div>
+        <h3 class="feature-title">Screenplay</h3>
+        <p class="feature-desc">AI-generated screenplay excerpts with proper formatting — scene headings, action lines, dialogue, and dramatic structure.</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/characters" class="feature-card">
+        <div class="feature-icon">◈</div>
+        <h3 class="feature-title">Characters</h3>
+        <p class="feature-desc">Deep psychological character profiles with motivations, arcs, flaws, relationships, and authentic sample dialogue.</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/sound" class="feature-card">
+        <div class="feature-icon">◉</div>
+        <h3 class="feature-title">Sound Design</h3>
+        <p class="feature-desc">Comprehensive sound design plans — musical motifs, ambient layers, SFX, silence usage, and reference films.</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/production" class="feature-card">
+        <div class="feature-icon">◆</div>
+        <h3 class="feature-title">Production Plan</h3>
+        <p class="feature-desc">Full pre-production roadmap — schedules, locations, budget tiers, crew roster, visual style, and distribution strategy.</p>
+        <span class="feature-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/generator.js') }}"></script>
+<script>
+async function quickGenerate() {
+  const idea  = document.getElementById('quickIdea').value.trim();
+  const genre = document.getElementById('quickGenre').value;
+  const tone  = document.getElementById('quickTone').value;
+  if (!idea) { alert('Please enter a film concept.'); return; }
+
+  document.getElementById('quickResults').classList.remove('hidden');
+  document.getElementById('quickGenerateBtn').disabled = true;
+
+  const types = ['screenplay','characters','sound','production'];
+  let done = 0;
+
+  // clear outputs
+  types.forEach(t => { document.getElementById('out-' + t).textContent = ''; });
+
+  const promises = types.map(type =>
+    streamGenerate(type, idea, genre, tone, (chunk) => {
+      document.getElementById('out-' + type).textContent += chunk;
+    }).then(() => {
+      done++;
+      document.getElementById('progressFill').style.width = (done/4*100) + '%';
+      if (done === 4) document.getElementById('progressText').textContent = 'Complete ✓';
+    })
+  );
+
+  await Promise.all(promises);
+  document.getElementById('quickGenerateBtn').disabled = false;
+}
+
+function exportActive() {
+  const active = document.querySelector('.rtab.active').dataset.tab;
+  const text   = document.getElementById('out-' + active).textContent;
+  downloadText(text, 'scriptoria-' + active + '.txt');
+}
+function exportAll() {
+  const types = ['screenplay','characters','sound','production'];
+  let all = '';
+  types.forEach(t => {
+    all += '=== ' + t.toUpperCase() + ' ===\n\n';
+    all += document.getElementById('out-' + t).textContent + '\n\n\n';
+  });
+  downloadText(all, 'scriptoria-full-package.txt');
+}
+function copyActive() {
+  const active = document.querySelector('.rtab.active').dataset.tab;
+  const text   = document.getElementById('out-' + active).textContent;
+  navigator.clipboard.writeText(text);
+}
+</script>
+{% endblock %}
